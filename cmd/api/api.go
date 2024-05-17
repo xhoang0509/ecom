@@ -3,7 +3,8 @@ package api
 import (
 	"database/sql"
 	"github.com/gorilla/mux"
-	"github.com/xhoang0509/ecom-api/service/user"
+	"github.com/xhoang0509/ecom-api/services/product"
+	"github.com/xhoang0509/ecom-api/services/user"
 	"log"
 	"net/http"
 )
@@ -22,11 +23,15 @@ func NewAPIServer(addr string, db *sql.DB) *APIServer {
 
 func (s *APIServer) Run() error {
 	router := mux.NewRouter()
-	subrouter := router.PathPrefix("/api/v1").Subrouter()
+	subRouter := router.PathPrefix("/api/v1").Subrouter()
 
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)
-	userHandler.RegisterRoutes(subrouter)
+	userHandler.RegisterRoutes(subRouter)
+
+	productStore := product.NewStore(s.db)
+	productHandler := product.NewHandler(productStore, userStore)
+	productHandler.RegisterRoutes(subRouter)
 
 	log.Println("Listening on ", s.addr)
 
